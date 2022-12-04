@@ -1,0 +1,112 @@
+@startuml IMPdeP
+
+class Artista {
+    experiencia
+	cantidadDePeliculas
+	ahorros
+	
+	cantidadDePeliculas()
+	sueldo()
+	recategorizar()
+	nivelDeFama()
+	actuoMasDeDiezPeliculas()
+	tieneFamaDeUnaEstrella()
+	cambiarExperiencia(experienciaRecategorizada)
+	actuar()
+	aumentarPeliculasActuadas()
+}
+
+Artista --> "experiencia" Experiencia
+
+abstract class Pelicula {
+ 	nombre
+ 	elenco
+ 	RECAUDACION_BASE  	
+ 	
+    nombre() 
+ 	presupuestoPelicula()
+ 	sumaDeSueldoDeElenco() 
+    costosDeRodaje()
+ 	gastosAdicionales()
+ 	recaudacion()
+    ganancias() 	
+ 	recaudacionSegunTipo()
+ 	rodar()
+ 	esEconomica()
+}
+
+Pelicula <|-- PeliculaDrama
+Pelicula <|-- PeliculaAccion
+Pelicula <|-- PeliculaTerror
+Pelicula <|-- PeliculaComedia
+
+class PeliculaDrama {
+ 	recaudacionSegunTipo()
+ 	cantidadDeLetras()
+}
+ 
+class PeliculaAccion {
+ 	CANTIDAD_VIDRIOS_ROTOS
+ 	
+ 	gastosAdicionales() 
+    recaudacionSegunTipo()
+ 	tamanioDeElenco()
+}
+ 
+class PeliculaTerror {
+  	CANTIDAD_CUCHOS
+  	
+ 	recaudacionSegunTipo()
+}
+ 
+class PeliculaComedia {
+ 	recaudacionSegunTipo()
+}
+
+Interface Experiencia {
+ 	recategorizar(artista)
+ 	puedeRecategorizarse(artista)
+ 	cambiarCategoria(artista)
+ 	sueldo(artista)
+}
+
+Experiencia <|-- amateur
+Experiencia <|-- establecido
+Experiencia <|-- estrella
+
+object amateur {
+ 	sueldo(artista)
+ 	puedeRecategorizarse(artista)
+ 	cambiarCategoria(artista)
+}
+ 
+object establecido {
+ 	sueldo(artista)
+	sueldoSegunFama(artista)
+	puedeRecategorizarse(artista)
+	cambiarCategoria(artista)
+}
+ 
+object estrella {
+ 	sueldo(artista)
+ 	recategorizar(artista)
+ 	puedeRecategorizarse(artista)
+ 	cambiarCategoria(artista)
+}
+
+object impdep {
+	artistas
+    peliculas
+
+	artistaMejorPago()
+	nombreDePeliculasEconomicas()
+	recategorizarArtistas()
+	peliculasEconomicas()
+	gananciaDePeliculasEconomicas()
+	ganancias(listaPeliculas)
+}
+
+impdep --> "* artistas" Artista
+impdep --> "* peliculas" Pelicula
+
+@enduml

@@ -1,0 +1,115 @@
+@startuml PdePLibre
+
+class Usuario {
+	nombre
+	dineroDisponible
+	puntos
+	
+	cantidadMaximaDeProductos()
+	puedeAscender()
+	antidadDeProductosEnCarrito() 
+	ieneCarritoVacio()
+	gregarCupon(cupon) 
+	agregarProducto(producto)
+	obtenerProducto(producto)
+	precioTotalDeCarrito()
+	cuponesNoUsados()
+	cuponAlAzar(listaCupones)
+	aumentarPuntos(cantidad)
+	disminuirPuntos(cantidad)
+	comprarCarrito()
+	aplicarCupon(importe, cupon)
+	esUsuarioMoroso()
+	eliminarCuponesUsados()
+	puedeSubirDeNivel()
+	actualizarNivel()
+}
+
+Usuario -r-> "productosDeCarrito *" Producto
+Usuario --> "cupones *" Cupon
+Usuario -l-> Nivel
+
+abstract class Producto {
+	nombre
+	precioBase
+	IVA
+	
+	precio()
+	recargo()
+	nombre() 
+	nombreDeOferta() 
+}
+
+class Mueble {
+	override recargo()
+}
+
+Mueble -u-|> Producto
+
+class Indumentaria {
+	override recargo() 
+}
+
+Indumentaria -u-|> Producto
+
+class Ganga {
+	override precio()
+	override recargo()
+	override nombreDeOferta()
+}
+
+Ganga -u-|> Producto
+
+class Cupon {
+	estado
+    porcentajeDescuento
+	
+	fueUsado() 
+	usar()
+	aplicarDescuento(importe)
+	descuentoCupon(importe)
+}
+
+abstract class Nivel {
+	agregarProducto(producto, usuario)
+	puedeAgregarProductos(usuario)
+	puedeSubirDeNivel(puntos)
+	subirDeNivel()
+}
+
+object bronce {
+	override puedeAgregarProductos(usuario)
+	override puedeSubirDeNivel(puntos)
+	override subirDeNivel()
+}
+
+bronce -u-|> Nivel
+
+object plata {
+	override puedeAgregarProductos(usuario)
+	override puedeSubirDeNivel(puntos)
+	override subirDeNivel()
+
+}
+
+plata -u-|> Nivel
+
+object oro {
+	override puedeAgregarProductos(usuario)
+	override puedeSubirDeNivel(puntos)
+	override subirDeNivel()
+}
+
+oro -u-|> Nivel
+
+object pdepLibre {
+	reducirPuntos()
+	eliminarCuponesUsados()
+	obtenerNombreDeOferta()
+	actualizarNiveles()
+}
+
+pdepLibre --> "usuarios *" Usuario
+pdepLibre --> "productos *" Producto
+
+@enduml

@@ -1,0 +1,125 @@
+@startuml Waza
+class Usuario {
+    nombre
+    dineroEnCuenta
+    dni
+
+    recibirMulta(nuevaMulta)
+    vehiculoAsociado()
+    recorrer(distancia)
+    recargarCombustible(cantidad)
+    puedePagarPorCombustible(cantidadCombustible)
+    pagarPorCombustible(cantidadARecargar)
+    tieneDNIHabilitadoParaRecorrer()
+    pagarMultas()
+    pagarPorMulta(multa)
+    puedePagarPorMulta(multa)
+    esUsuarioComplicado()
+    montoTotalDeMultas(valorDeMultas)
+}
+
+Usuario --> Vehiculo
+Usuario --> "multas *" Multa
+
+abstract class Vehiculo {
+	combustible
+	capacidadMaxima
+	velocidadPromedio
+	
+	velocidadPromedio()
+	recorrer(distancia)
+	cantidadARecargar(cantidadCombustible)
+	recargarCombustible(cantidadCombustible)
+	superaLaCapacidadMaxima(cantidadCombustible)
+	superaVelocidadMaxima(velocidadMaximaPermitida) 
+	esEcologico()
+}
+
+class Camioneta  {
+	esEcologico()
+	recorrer(distancia)
+}
+
+Camioneta -u-|> Vehiculo
+
+class Deportivo  {
+	esEcologico()
+	recorrer(distancia)
+}
+
+Deportivo -u-|> Vehiculo
+
+class Familiar  {
+	esEcologico()
+}
+
+Familiar -u-|> Vehiculo
+
+class Multa {
+	costo
+	estado 
+	
+	costo() 
+	aplicarRecargo()
+	cambiarEstadoPagada() 
+	estaPagada()
+}
+
+class Zona {
+	velocidadMaximaPermitida
+	
+	controles()	
+	cantidadDeUsuarios() 
+	activarControles()
+	superaVelocidadPermitida(usuario)
+}
+
+Zona -r-> "usuarios *" Usuario
+Zona --> "controles *" Control
+
+abstract class Control {
+	 controlarUsuarios(usuarios, zona)
+	 controlarUsuario(usuario, zona)
+	 valorMulta()
+	 esMultable(usuario, zona)
+	
+}
+
+class ControlVelocidad {
+	valorMultaVelocidad
+	
+	esMultable(usuario, zona)
+	valorMulta()
+}
+
+ControlVelocidad -u-|> Control
+
+class ControlEcologico {
+	valorMultaEcologica
+	
+	esMultable(usuario, zona)
+	valorMulta()
+}
+
+ControlEcologico -u-|> Control
+
+class ControlRegulatorio {
+	valorMultaRegulatoria
+
+	esMultable(usuario, zona)
+	valorMulta()
+}
+
+ControlRegulatorio -u-|> Control
+
+object waza {
+	pagarMultas()
+	registrarPago(multa)
+	zonaMasTransitada()
+	usuariosComplicados()
+}
+
+waza --> "usuarios *" Usuario
+waza --> "zonas *" Zona
+
+@enduml

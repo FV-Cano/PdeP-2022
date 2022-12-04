@@ -1,0 +1,345 @@
+import comida.*
+import estados.*
+import hormigas.*
+import hormiguero.*
+import viajes.*
+import enemigos.*
+import colonias.*
+import expediciones.*
+
+
+const hormigueroCasaDeGranHermano = new HormigueroCercano (posicionHormiguero = new Posicion(x=1,y=1), hormigas = #{})
+
+const thiago  	= new Obrera(posicionHormiga  = new Posicion(x=0,y=0), hormiguero				   = hormigueroCasaDeGranHermano)
+const holder  	= new Soldado(posicionHormiga = new Posicion(x=0,y=0), hormiguero 				   = hormigueroCasaDeGranHermano)
+const juan  	= new Zangano(posicionHormiga = hormigueroCasaDeGranHermano.posicion(), hormiguero = hormigueroCasaDeGranHermano)
+const julieta  	= new Reina(posicionHormiga   = hormigueroCasaDeGranHermano.posicion(), hormiguero = hormigueroCasaDeGranHermano)
+
+const hormigasGranHermano = #{thiago, holder, juan, julieta}
+
+const huevos = new Comida(peso = 20, posicionComida = new Posicion(x = 6, y = 3))
+
+const expedicionPrueba = new Expedicion(objetivo = huevos, hormigueroInicial = hormigueroCasaDeGranHermano)
+
+object mundo {
+	
+	const criaturas = #{thiago, holder, juan, julieta}		
+
+	method agregarCriatura(criatura) {criaturas.add(criatura)}
+	method todasLasCriaturas() = criaturas
+}
+
+describe "1. Implementacion de tipos de hormigas." {
+	
+	test "1.a. Tipos de hormiga recolectando alimento" {
+		
+		thiago.extraerComida(huevos)
+		holder.extraerComida(huevos)
+		juan.extraerComida(huevos)
+		julieta.extraerComida(huevos)
+		
+		assert.equals([6,3] , thiago.posicion().getPosicion())
+		assert.equals(10, thiago.alimento())
+		assert.equals([0,0] , holder.posicion().getPosicion())
+		assert.equals(0, holder.alimento())
+		assert.equals([1,1] , juan.posicion().getPosicion())
+		assert.equals(1, juan.alimento())
+		assert.equals([1,1] , julieta.posicion().getPosicion())
+		assert.equals(0, julieta.alimento())	
+	}
+	
+	test "1.b. Tipos de hormiga entregando alimentos" {
+		thiago.extraerComida(huevos)
+		holder.extraerComida(huevos)
+		juan.extraerComida(huevos)
+		julieta.extraerComida(huevos)
+		
+		// Si bien el hormiguero puede llamarlos a todos para que entreguen alimento, la consigna dice "Decirle a una hormiga que entregue el alimento"
+		thiago.entregarAlimento()
+		holder.entregarAlimento()
+		juan.entregarAlimento()
+		julieta.entregarAlimento()
+		
+		assert.equals([1,1] , thiago.posicion().getPosicion())
+		assert.equals(0, thiago.alimento())
+		assert.equals([1,1] , holder.posicion().getPosicion())
+		assert.equals(0, holder.alimento())
+		assert.equals([1,1] , juan.posicion().getPosicion())
+		assert.equals(1, juan.alimento())
+		assert.equals([1,1] , julieta.posicion().getPosicion())
+		assert.equals(0, julieta.alimento())
+		assert.equals(11, hormigueroCasaDeGranHermano.alimentoEnDeposito())
+	}
+	
+	test "1.c. Tipos de hormiga al limite" {
+		assert.equals(false, thiago.estaAlLimite())
+		assert.equals(false, holder.estaAlLimite())
+		assert.equals(true, juan.estaAlLimite())
+		assert.equals(false, julieta.estaAlLimite())
+	}
+	
+	test "1.d. Tipos de hormiga y su posicion" {
+		assert.equals([0,0], thiago.posicion().getPosicion())
+		assert.equals([0,0], holder.posicion().getPosicion())
+		assert.equals([1,1], juan.posicion().getPosicion())
+		assert.equals([1,1], julieta.posicion().getPosicion())
+	}
+}
+
+describe "2. Test hormiguero con todo tipo de hormigas" {
+	
+	test "2.a. Hormigas en el hormiguero" {
+		hormigasGranHermano.forEach({hormiga => hormigueroCasaDeGranHermano.agregarHormiga(hormiga)})
+		assert.equals(4, hormigueroCasaDeGranHermano.cantidadDeHormigas())
+	}
+	
+	test "2.b. Recorrido total de hormigas del hormiguero" {
+		hormigasGranHermano.forEach({hormiga => hormigueroCasaDeGranHermano.agregarHormiga(hormiga)})
+		thiago.mover(6,3)
+		holder.mover(6,3)		
+		juan.mover(6,3)
+		julieta.mover(6,3)
+		
+		assert.equals(12, hormigueroCasaDeGranHermano.distanciaRecorridaHormigas())
+	}
+	
+	test "2.c. Cantidad de alimento en tránsito" {
+		hormigasGranHermano.forEach({hormiga => hormigueroCasaDeGranHermano.agregarHormiga(hormiga)})
+		thiago.extraerComida(huevos)
+		
+		assert.equals(11, hormigueroCasaDeGranHermano.cantidadAlimentoEnHormigas())
+	}
+}
+
+describe "3 - 5. Hormigas al ataque" {
+	
+	const hormigueroAlfa = new HormigueroViolento (posicionHormiguero = new Posicion(x=1,y=1), hormigas = #{})
+	const alfa  = new Soldado(posicionHormiga = new Posicion(x=0,y=0), hormiguero = hormigueroAlfa)
+	const tenazas = new Langosta(posicionEnemigo = new Posicion(x=1,y=2))
+	
+	
+	test "3. Si una hormiga se muere, debe ser removida en ese momento del hormiguero" {
+		hormigasGranHermano.forEach({hormiga => hormigueroCasaDeGranHermano.agregarHormiga(hormiga)})
+		hormigueroAlfa.agregarHormiga(alfa)
+		alfa.atacar(thiago)
+		
+		assert.equals(muerta, thiago.estado())
+		assert.equals(#{holder,juan,julieta}, hormigueroCasaDeGranHermano.hormigas())
+	}
+	
+	test "4. Ataque con hormiga y con langosta" {
+		hormigueroAlfa.agregarHormiga(alfa)
+		const hormigaHeroe = new Obrera(posicionHormiga = new Posicion(x=0,y=0), hormiguero = hormigueroAlfa)
+		
+		alfa.atacar(thiago)
+		assert.equals(muerta, thiago.estado())
+		assert.equals(20, alfa.vitalidad())
+		
+		alfa.atacar(tenazas)
+		assert.equals(45, tenazas.vitalidad())
+		assert.equals(10, alfa.vitalidad())
+		
+		hormigaHeroe.atacar(tenazas)
+		assert.equals(43, tenazas.vitalidad())
+		assert.equals(muerta, hormigaHeroe.estado())
+	}
+	
+	test "5. Detectando intrusos cerca del hormiguero" {
+		hormigasGranHermano.forEach({hormiga => hormigueroCasaDeGranHermano.agregarHormiga(hormiga)})
+		hormigueroAlfa.agregarHormiga(alfa)
+		
+		// Intrusos en hormigueroCasaDeGranHermano
+		const beta  = new Soldado(posicionHormiga = new Posicion(x=2,y=1), hormiguero = hormigueroAlfa)
+		const gamma  = new Soldado(posicionHormiga = new Posicion(x=1,y=1), hormiguero = hormigueroAlfa)
+		const omega  = new Soldado(posicionHormiga = new Posicion(x=10,y=20), hormiguero = hormigueroAlfa)
+		
+		[beta, gamma, omega, alfa, tenazas].forEach({criatura => mundo.agregarCriatura(criatura)})
+		
+		assert.equals(#{alfa, beta, gamma, tenazas}, mundo.todasLasCriaturas().filter({criatura => hormigueroCasaDeGranHermano.esIntruso(criatura)}))
+	}
+
+}
+
+describe "6. Tipos de hormiguero atacando intrusos" {
+		
+		const hormigueroTipoCercano 	= new HormigueroCercano 	(posicionHormiguero = new Posicion(x=2,y=2), hormigas = #{})
+		const hormigueroTipoCualquiera  = new HormigueroCualquiera  (posicionHormiguero = new Posicion(x=2,y=2), hormigas = #{})
+		const hormigueroTipoViolento 	= new HormigueroViolento 	(posicionHormiguero = new Posicion(x=2,y=2), hormigas = #{})
+		
+		const azul  	= new Soldado(posicionHormiga = new Posicion(x=2,y=1), 	 hormiguero 	= hormigueroTipoCercano)
+		const rojo  	= new Soldado(posicionHormiga = new Posicion(x=1,y=1),   hormiguero 	= hormigueroTipoCercano)
+		const amarillo  = new Soldado(posicionHormiga = new Posicion(x=10,y=20), hormiguero 	= hormigueroTipoCercano)
+		const naranja  	= new Soldado(posicionHormiga = new Posicion(x=3,y=6), 	 hormiguero 	= hormigueroTipoCercano)
+		const violeta  	= new Soldado(posicionHormiga = new Posicion(x=2,y=5), 	 hormiguero 	= hormigueroTipoCercano)
+		const blanco  	= new Soldado(posicionHormiga = new Posicion(x=50,y=30), hormiguero 	= hormigueroTipoCercano)
+		const negro  	= new Soldado(posicionHormiga = new Posicion(x=3,y=1), 	 hormiguero 	= hormigueroTipoCercano)
+		const verde  	= new Soldado(posicionHormiga = new Posicion(x=4,y=1), 	 hormiguero 	= hormigueroTipoCercano)
+		const turquesa  = new Soldado(posicionHormiga = new Posicion(x=2,y=2),   hormiguero 	= hormigueroTipoCercano)
+		const rosa  	= new Soldado(posicionHormiga = new Posicion(x=5,y=67),  hormiguero 	= hormigueroTipoCercano)
+		
+		const hormigasPowerRanger = #{azul, rojo, amarillo, naranja, violeta, blanco, negro, verde, turquesa, rosa}
+		
+		const tenazas = new Langosta(posicionEnemigo = new Posicion(x=1,y=2))
+			
+	test "6.1 Solo las hormigas cercanas" {
+		
+		hormigasPowerRanger.forEach({criatura => mundo.agregarCriatura(criatura)})
+		hormigasPowerRanger.forEach({hormiga => hormigueroTipoCercano.agregarHormiga(hormiga)})
+		mundo.agregarCriatura(tenazas)
+		
+		const enemigos = mundo.todasLasCriaturas().filter({criatura => hormigueroTipoCercano.esIntruso(criatura)})
+		assert.equals(#{juan, julieta, tenazas}, enemigos)
+		assert.equals(#{azul, rojo, naranja, violeta, negro, verde, turquesa}, hormigueroTipoCercano.estanCerca())
+		
+		enemigos.forEach({enemigo => hormigueroTipoCercano.defender(enemigo)})
+		assert.equals(muerta, juan.estado())
+		assert.equals(muerta, julieta.estado())
+		assert.equals(15, tenazas.vitalidad())
+	}
+	
+	test "6.2 Diez hormigas cualquiera" {
+		hormigasPowerRanger.forEach({criatura => mundo.agregarCriatura(criatura)})
+		hormigasPowerRanger.forEach({hormiga => hormigueroTipoCualquiera.agregarHormiga(hormiga)})
+		hormigasPowerRanger.forEach({hormiga => hormiga.hormiguero(hormigueroTipoCualquiera)})
+		mundo.agregarCriatura(tenazas)
+		
+		const enemigos = mundo.todasLasCriaturas().filter({criatura => hormigueroTipoCualquiera.esIntruso(criatura)})
+		assert.equals(#{juan, julieta, tenazas}, enemigos)
+		
+		enemigos.forEach({enemigo => hormigueroTipoCualquiera.defender(enemigo)})
+		assert.equals(muerta, juan.estado())
+		assert.equals(muerta, julieta.estado())
+		assert.equals(0, tenazas.vitalidad())
+	}
+	
+	test "6.3 Solo hormigas violentas" {
+		hormigasPowerRanger.forEach({criatura => mundo.agregarCriatura(criatura)})
+		hormigasPowerRanger.forEach({hormiga => hormigueroTipoViolento.agregarHormiga(hormiga)})
+		hormigasPowerRanger.forEach({hormiga => hormiga.hormiguero(hormigueroTipoViolento)})
+		mundo.agregarCriatura(tenazas)
+		
+		const enemigos = mundo.todasLasCriaturas().filter({criatura => hormigueroTipoViolento.esIntruso(criatura)})
+		assert.equals(#{juan, julieta, tenazas}, enemigos)
+		
+		enemigos.forEach({enemigo => hormigueroTipoViolento.defender(enemigo)})
+		assert.equals(muerta, juan.estado())
+		assert.equals(muerta, julieta.estado())
+		assert.equals(0, tenazas.vitalidad())
+	}
+}
+
+describe "7 - 8. Colonias" {
+	const camelot = new HormigueroCercano (posicionHormiguero = new Posicion(x=3,y=3), hormigas = #{})
+
+	const coloniaHormiguero = new Colonia(coloniasYHormigueros = #{hormigueroCasaDeGranHermano})
+	const coloniaDeColonias = new Colonia(coloniasYHormigueros = #{camelot,coloniaHormiguero})
+
+	const merlin  = new Obrera(posicionHormiga = new Posicion(x=3,y=3), hormiguero = camelot, alimento = 5)
+	const arturo  = new Obrera(posicionHormiga = new Posicion(x=3,y=3), hormiguero = camelot, alimento = 5)
+	
+	const caballerosDeCamelot = #{merlin, arturo}
+	
+	const bichoIntruso = new Langosta(posicionEnemigo = new Posicion(x=2,y=2))
+	
+	test "7.a. Crear una colonia de hormigueros, y hacer que se defienda de los intrusos "{
+        hormigasGranHermano.forEach({hormiga => hormigueroCasaDeGranHermano.agregarHormiga(hormiga)})
+        caballerosDeCamelot.forEach({hormiga => camelot.agregarHormiga(hormiga)})
+        coloniaHormiguero.defender(bichoIntruso)
+        assert.equals(bichoIntruso.vitalidad(),43)
+        assert.equals(coloniaHormiguero.cantidadDeHormigas(),1)
+        assert.equals(hormigueroCasaDeGranHermano.hormigas().size(),1)
+        assert.equals(camelot.hormigas().size(),2)
+        }
+    
+    test "7.b. Crear una colonia de hormigueros, y hacer que reclame alimento "{
+    	caballerosDeCamelot.forEach({hormiga => camelot.agregarHormiga(hormiga)})
+        hormigasGranHermano.forEach({hormiga => hormigueroCasaDeGranHermano.agregarHormiga(hormiga)})
+        coloniaHormiguero.reclamarAlimento()
+        assert.equals(hormigueroCasaDeGranHermano.alimentoEnDeposito(),1)
+    
+    }
+    
+    test "7.c. Crear una colonia de hormigueros, y hacer que informe la cantidad total de alimento"{
+    	caballerosDeCamelot.forEach({hormiga => camelot.agregarHormiga(hormiga)})
+        hormigasGranHermano.forEach({hormiga => hormigueroCasaDeGranHermano.agregarHormiga(hormiga)})
+        coloniaHormiguero.reclamarAlimento()
+        assert.equals(coloniaHormiguero.alimentoTotal(),2)
+    }
+    
+    test "8.a. Crear una colonia de colonias, y hacer que se defienda de los intrusos "{
+    	caballerosDeCamelot.forEach({hormiga => camelot.agregarHormiga(hormiga)})
+        hormigasGranHermano.forEach({hormiga => hormigueroCasaDeGranHermano.agregarHormiga(hormiga)})
+        coloniaDeColonias.defender(bichoIntruso)
+        assert.equals(bichoIntruso.vitalidad(),39)
+        assert.equals(coloniaDeColonias.cantidadDeHormigas(),1)
+        assert.equals(hormigueroCasaDeGranHermano.hormigas().size(),1)
+        assert.equals(camelot.hormigas().size(),0)
+        }
+    
+    test "8.b. Crear una colonia de colonias, y hacer que reclame alimento "{
+    	caballerosDeCamelot.forEach({hormiga => camelot.agregarHormiga(hormiga)})
+        hormigasGranHermano.forEach({hormiga => hormigueroCasaDeGranHermano.agregarHormiga(hormiga)})
+        coloniaDeColonias.reclamarAlimento()
+        assert.equals(hormigueroCasaDeGranHermano.alimentoEnDeposito(),1)
+        assert.equals(camelot.alimentoEnDeposito(),10)
+    }
+    
+    test "8.c. Crear una colonia de colonias, y hacer que informe la cantidad total de alimento"{
+    	caballerosDeCamelot.forEach({hormiga => camelot.agregarHormiga(hormiga)})
+        hormigasGranHermano.forEach({hormiga => hormigueroCasaDeGranHermano.agregarHormiga(hormiga)})
+        coloniaDeColonias.reclamarAlimento()
+        assert.equals(coloniaDeColonias.alimentoTotal(),12)
+    }
+}
+
+describe "9 - 13. Expediciones "{
+    
+    test "9. Preparar Expedicion" {
+        hormigasGranHermano.forEach({hormiga => hormigueroCasaDeGranHermano.agregarHormiga(hormiga)})        
+        expedicionPrueba.asignarHormigas()
+        assert.equals(2,expedicionPrueba.hormigas().size())
+        assert.equals(2,hormigueroCasaDeGranHermano.hormigas().size())
+        }
+        
+    test "10. Enviar Expedicion" {
+        hormigasGranHermano.forEach({hormiga => hormigueroCasaDeGranHermano.agregarHormiga(hormiga)})    
+        expedicionPrueba.asignarHormigas()
+        expedicionPrueba.realizarExpedicion()
+        assert.equals(10,hormigueroCasaDeGranHermano.alimentoEnDeposito())
+        //obrera levanta 10, pierde 1, lo entrega, zangano siempre entrega 1, las otras dos hormigas no pueden extraer y/o entregar alimento por su tipo
+        }
+        
+    test "11. Desarmar Expedicion" {
+        hormigasGranHermano.forEach({hormiga => hormigueroCasaDeGranHermano.agregarHormiga(hormiga)})    
+        expedicionPrueba.asignarHormigas()
+        expedicionPrueba.desarmar()
+        assert.equals(0,expedicionPrueba.hormigas().size())
+        assert.equals(4,hormigueroCasaDeGranHermano.hormigas().size())
+        }
+        
+    test "12. Desarmar una expedicion, y volverla a desarmar. ¡Debería fallar!" {
+        hormigasGranHermano.forEach({hormiga => hormigueroCasaDeGranHermano.agregarHormiga(hormiga)})    
+        expedicionPrueba.asignarHormigas()
+        expedicionPrueba.desarmar()
+        assert.throwsExceptionLike(
+        new ExcepcionExpedicion(message ="No se puede desarmar una expedición vacía"),{expedicionPrueba.desarmar()})
+    }
+    
+    test "13.Desarmar una expedicion, y enviarla a recolectar el alimento. ¡También debería fallar!" {
+        hormigasGranHermano.forEach({hormiga => hormigueroCasaDeGranHermano.agregarHormiga(hormiga)})    
+        expedicionPrueba.asignarHormigas()
+        expedicionPrueba.desarmar()
+        assert.throwsExceptionLike(
+				new ExcepcionExpedicion(message = "No se puede realizar una expedicion sin integrantes") ,
+				{expedicionPrueba.realizarExpedicion()})
+    }
+}
+
+/* 14. Actualmente, el sistema permite que una criatura del tipo "Langosta" entre al hormiguero debido a que no se especifico una restricción de tipo para esta acción
+ * Sin embargo, pese a que una langosta puede entrar en el hormiguero, el sistema no seguiría funcionando correctamente porque toda la lógica de hormigas no la coparten
+ * el resto de criaturas.
+ * La diferencia con una hormiga es que todas las criaturas excepto, valga la redundancia, las hormigas, tienen un estado e interfaz distintos a estas. */ 
+
+
+
+

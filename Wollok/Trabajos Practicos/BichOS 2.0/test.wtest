@@ -1,0 +1,233 @@
+import comida.*
+import estados.*
+import hormigas.*
+import hormiguero.*
+import viajes.*
+
+describe "Tests de Hormigas" {
+	// Horacio va a ser nuestra hormiga para los tests de hormigas
+	const horacio = new Hormiga(
+		alimento = 10,
+    	posicionHormiga = new Posicion(x = 0, y = 0),
+    	distancias = [],
+    	destinos = [],
+    	estado = normal,
+    	ultimoRecorrido = 0
+	)
+		
+	test "1. Saber cuanto alimento lleva una hormiga" {
+		assert.equals(10, horacio.alimento())
+	}
+	
+	test "2. Saber si una hormiga esta al limite" {
+		assert.that(horacio.estaAlLimite())
+	}
+}
+
+
+describe "Tests de Recorridos" {	
+	const horacio = new Hormiga(
+		alimento = 0,
+    	posicionHormiga = new Posicion(x = 0, y = 0),
+    	distancias = [],
+    	destinos = [],
+    	estado = normal,
+    	ultimoRecorrido = 0
+	)
+	
+	/* Los test se hacen con distancias enteras para que sea más sencillo de calcular
+	 * (El resultado de "recorrido" está truncado)
+	 */
+	
+	
+	test "3. Saber por que puntos que paso una hormiga" {
+		horacio.mover(1,2)
+		horacio.mover(3,5)
+		horacio.mover(8,0)
+		assert.equals([[1,2],[3,5],[8,0]], horacio.destinos())
+	}
+	
+	test "4. Saber que distancia recorrio" {
+		horacio.mover(1,2)
+		horacio.mover(3,5)
+		horacio.mover(8,0)
+		assert.equals(12, horacio.distanciaTotal(0))
+	}
+	
+	test "5. Saber qué distancia recorrió en los últimos N viajes" {
+		// Con N = 2
+		horacio.mover(1,2)
+		horacio.mover(3,5)
+		horacio.mover(8,0)
+		assert.equals(10, horacio.distanciaTotal(1)) 
+	}
+	
+	test "6. Calcular el promedio de distancia de sus viajes." {
+		horacio.mover(1,2)
+		horacio.mover(3,5)
+		horacio.mover(8,0)
+		horacio.mover(2,4)
+		assert.equals(4.75, horacio.distanciaPromedio(0))
+	}
+	
+	test "7. Calcular el promedio de distancia de sus últimos N viajes. " {
+		// Con N = 2
+		horacio.mover(1,2)
+		horacio.mover(3,5)
+		horacio.mover(8,0)
+		assert.equals(5, horacio.distanciaPromedio(1)) 
+	}
+	
+}
+
+describe "Tests de Hormigueros" {
+	const horacio = new Hormiga(
+		alimento = 6,
+    	posicionHormiga = new Posicion(x = 0, y = 0),
+    	distancias = [],
+    	destinos = [],
+    	estado = normal,
+    	ultimoRecorrido = 0
+	)
+    const jorge = new Hormiga(
+		alimento = 3,
+    	posicionHormiga = new Posicion(x = 0, y = 0),
+    	distancias = [],
+    	destinos = [],
+    	estado = normal,
+    	ultimoRecorrido = 0
+	)
+				
+	test "8. Saber cuántas hormigas tiene. Probarlo 
+			a. Para un hormiguero vacío
+			b. Para un hormiguero con varias hormigas" {
+				assert.equals(0, hormiguero.cantidadDeHormigas())
+				hormiguero.agregarHormiga(horacio)
+				hormiguero.agregarHormiga(jorge)
+				assert.equals(2, hormiguero.cantidadDeHormigas())
+			}
+			
+	test "9/12. Reclamarle a sus hormigas que entreguen el alimento." {
+		hormiguero.agregarHormiga(horacio)
+		hormiguero.agregarHormiga(jorge)
+		hormiguero.reclamarAlimento()
+		assert.equals(0, horacio.alimento())
+		assert.equals(0, jorge.alimento())
+		assert.equals(9, hormiguero.alimentoEnDeposito())
+	}
+	
+	test "10. Saber la cantidad de alimento total." {
+		hormiguero.agregarHormiga(horacio)
+		hormiguero.agregarHormiga(jorge)
+		assert.equals(6, horacio.alimento())
+		assert.equals(3, jorge.alimento())
+		assert.equals(0, hormiguero.alimentoEnDeposito())
+		assert.equals(9, hormiguero.alimentoTotal())
+	}
+	
+	test "11. Saber la cantidad de alimento en tránsito." {
+		hormiguero.agregarHormiga(horacio)
+		hormiguero.agregarHormiga(jorge)
+		assert.equals(9, hormiguero.cantidadAlimentoEnHormigas())
+	}
+	
+	// El test 12, se testea en el test 9
+	
+	test "13. Saber cuánto recorrieron todas sus hormigas." {
+		hormiguero.agregarHormiga(horacio)
+		hormiguero.agregarHormiga(jorge)
+		horacio.mover(1,2)
+		jorge.mover(6,1)
+		assert.equals(8, hormiguero.distanciaRecorridaHormigas())
+	}
+}
+
+describe "Tests de Extraccion de Alimento" {
+	const pizza = new Comida(
+		peso = 50,
+		posicionComida = new Posicion(x = 3, y = 6)
+	)
+	const mandarina = new Comida(
+		peso = 4,
+		posicionComida = new Posicion(x = 1, y = 2)
+	)
+	const horacio = new Hormiga(
+		alimento = 0,
+    	posicionHormiga = new Posicion(x = 0, y = 0),
+    	distancias = [],
+    	destinos = [],
+    	estado = normal,
+    	ultimoRecorrido = 0
+	)
+    const jorge = new Hormiga(
+		alimento = 5,
+    	posicionHormiga = new Posicion(x = 0, y = 0),
+    	distancias = [],
+    	destinos = [],
+    	estado = normal,
+    	ultimoRecorrido = 0
+	)
+	
+	test "14. Extraer alimento de los distintos objetos del terreno
+		  15. Extraer en su totalidad el alimento de un objeto.
+		  16. Extraer de un alimento con una hormiga que ya lleve 5mg de alimento." {
+		horacio.extraerComida(pizza)
+		jorge.extraerComida(mandarina)
+		assert.equals(10, horacio.alimento())
+		assert.equals(9, jorge.alimento())
+		assert.equals(0, mandarina.peso())
+		assert.equals(39, pizza.peso())	
+	}
+}
+
+describe "Tests de Cansancio" {
+	const horacio = new Hormiga(
+		alimento = 0,
+    	posicionHormiga = new Posicion(x = 0, y = 0),
+    	distancias = [],
+    	destinos = [],
+    	estado = normal,
+    	ultimoRecorrido = 0
+	)
+	const pizza = new Comida(
+		peso = 50,
+		posicionComida = new Posicion(x = 3, y = 6)
+	)
+	
+	test "17. Hacer que una hormiga recorra más de 10mts, y decirle que se desplace. Debería quedarse en su lugar." {
+		horacio.mover(6,10)
+		horacio.mover(1,1)
+		assert.equals(6, horacio.posicion().posicionX())
+		assert.equals(10, horacio.posicion().posicionY())
+	}
+	
+	test "18. Hacer que una hormiga recorra más de 10mts, y decirle que recolecte alimento. 
+		  Su cantidad de alimento no debería variar." {
+		horacio.mover(6,10)
+		horacio.extraerComida(pizza)
+		assert.equals(0, horacio.alimento())
+	}
+	
+	test "19. Hacer descansar a una hormiga cansada, y luego hacerla recolectar. 
+		  Debería incrementar su alimento transportado como siempre." {
+		horacio.mover(6,10)
+		assert.equals(cansada, horacio.estado())
+		horacio.descansar()
+		horacio.extraerComida(pizza)
+		assert.equals(10, horacio.alimento())
+    }
+    
+    test "20. Hacer descansar a una hormiga en estado normal. Y hacerla recolectar alimento superando el límite." {
+    	horacio.mover(3,6)
+    	horacio.descansar()
+    	horacio.extraerComida(pizza)
+    	assert.equals(20, horacio.alimento())
+    }
+    
+    test "21. Hacer recorrer 5mts a una hormiga exaltada. Y verificar que no se puede recolectar más del límite." {
+    	horacio.descansar()
+    	assert.equals(exaltada, horacio.estado())
+    	horacio.extraerComida(pizza)
+    	assert.equals(10, horacio.alimento())
+    }
+}

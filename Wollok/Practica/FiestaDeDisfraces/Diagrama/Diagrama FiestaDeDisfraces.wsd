@@ -1,0 +1,130 @@
+@startuml FiestaDisfraces
+
+ class Fiesta {
+ 	lugar
+ 	fecha
+
+ 	fecha() 	
+ 	tieneInvitadoA(unaPersona)
+ 	esUnBodrio()
+ 	mejorDisfraz()
+ 	fiestaInolvidable() 
+	todosSonSexies()
+	todosEstanConformes() 
+}
+
+Fiesta --> "*invitados" Invitado
+
+abstract class Invitado {
+	edad
+	
+	edad()
+	puntuacionDelDisfraz(fiesta)
+	esSexy()
+	estaSatisfecho(fiesta)
+	requisitoSegunTipo(fiesta)
+	
+}
+
+Invitado -l-> "*personalidad" Personalidad
+Invitado <|-- Caprichoso
+Invitado <|-- Pretencioso
+Invitado <|-- Numerologo
+Invitado -r-> Disfraz
+
+class Caprichoso  {
+	requisitoSegunTipo(fiesta)
+}
+
+class Pretencioso  {
+	diaDeHoy
+	requisitoSegunTipo(fiesta)
+}
+
+class Numerologo  {
+	numeroEspecifico
+	seleccionarNumeroEspecifico(numero)
+	requisitoSegunTipo(fiesta) 
+}
+ 
+Interface Personalidad {
+    esSexy(persona)
+}
+
+Personalidad <|.. alegre
+Personalidad <|.. taciturna
+Personalidad <|.l. cambiante
+
+object alegre {
+ 	esSexy(persona)
+}
+object taciturna {
+ 	esSexy(persona)
+}
+object cambiante {
+ 	esSexy(persona)
+}
+
+class Disfraz {
+	nombreDeDisfraz
+	fechaDeConfeccion
+
+    tieneNombrePar()
+}
+
+Disfraz -r-> "*caracteristicas" Caracteristica
+
+Interface Caracteristica {
+    puntaje(duenio, fiesta)
+}
+
+Caracteristica <|.r. Gracioso
+Caracteristica <|.. Tobara
+Caracteristica <|.. Caretas
+Caracteristica <|.. Sexies
+
+class Gracioso {
+	nivelDeGracia
+	multiplicador(duenio) 
+	nivelValido(nivelGracia)
+	nivelDeGracia(nuevoNivel)
+}
+
+class Tobara {
+	fechaDeCompra
+	puntajeSegunFecha(fiesta)
+}
+
+class Caretas {
+	caretaDePersonaje
+}
+
+interface Personaje {
+    puntoPorPersonaje()
+}
+
+Caretas --> Personaje
+Personaje <|.. mickeyMouse
+Personaje <|.. osoCarolina
+
+class Sexies {
+}
+
+object mickeyMouse {
+}
+object osoCarolina {
+}
+
+object cambiadorDeTrajes {
+	puedenCambiarTraje(unaPersona, otraPersona, unaFiesta)
+	ambasEstanEnLaFiesta(unaPersona, otraPersona, unaFiesta)	
+	algunaEstaDisconforme(unaPersona, otraPersona)	
+	estanConformesLuegoDeCambiar(unaPersona, otraPersona)	
+	cambioDeTrajes(unaPersona, otraPersona)
+}
+
+cambiadorDeTrajes .l.> Fiesta
+cambiadorDeTrajes ..> Invitado
+
+
+@enduml
